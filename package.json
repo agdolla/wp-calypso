@@ -164,7 +164,7 @@
     "lint:config-defaults": "node server/config/validate-config-keys.js",
     "lint:mixedindent": "mixedindentlint --ignore-comments client/**/*.scss assets/**/*.scss **/*.js **/*.jsx !build/** !.git/** !node_modules/** !public/** !client/config/index.js",
     "eslint-branch": "node bin/eslint-branch.js",
-    "prestart": "npm run install-if-needed && check-node-version --package",
+    "prestart": "npm run install-if-needed && check-node-version --package || exit 0",
     "start": "npm run build",
     "poststart": "npm run env -- node build/bundle.js",
     "prebuild": "npm run install-if-needed",
