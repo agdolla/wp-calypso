@@ -1,9 +1,4 @@
 /**
- * Internal dependencies
- */
-import { isSupportUserSession, boot as supportUserBoot } from 'lib/user/support-user-interop';
-
-/**
  * External dependencies
  */
 var store = require( 'store' ),
@@ -15,10 +10,11 @@ var store = require( 'store' ),
 /**
  * Internal dependencies
  */
-var wpcom = require( 'lib/wp' ),
-	Emitter = require( 'lib/mixins/emitter' ),
-	userUtils = require( './shared-utils' ),
-	localforage = require( 'lib/localforage' );
+import { isSupportUserSession, boot as supportUserBoot } from 'lib/user/support-user-interop';
+import { shutdown } from 'state/initial-state';
+import wpcom from 'lib/wp';
+import Emitter from 'lib/mixins/emitter';
+import userUtils from './shared-utils';
 
 /**
  * User component
@@ -235,9 +231,7 @@ User.prototype.clear = function( onClear ) {
 	this.data = [];
 	delete this.settings;
 	store.clear();
-	if ( config.isEnabled( 'persist-redux' ) ) {
-		localforage.removeItem( 'redux-state', onClear );
-	}
+	shutdown( onClear );
 };
 
 /**

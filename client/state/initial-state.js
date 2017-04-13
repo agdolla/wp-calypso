@@ -26,6 +26,8 @@ const DAY_IN_HOURS = 24;
 const HOUR_IN_MS = 3600000;
 export const SERIALIZE_THROTTLE = 5000;
 export const MAX_AGE = 7 * DAY_IN_HOURS * HOUR_IN_MS;
+let throttledSaveState;
+let unsubscribe;
 
 function getInitialServerState() {
 	// Bootstrapped state from a server-render
@@ -70,7 +72,7 @@ function loadInitialStateFailed( error ) {
 export function persistOnChange( reduxStore, serializeState = serialize ) {
 	let state;
 
-	const throttledSaveState = throttle( function() {
+	throttledSaveState = throttle( function() {
 		const nextState = reduxStore.getState();
 		if ( state && nextState === state ) {
 			return;
@@ -86,11 +88,23 @@ export function persistOnChange( reduxStore, serializeState = serialize ) {
 
 	if ( global.window ) {
 		global.window.addEventListener( 'beforeunload', throttledSaveState.flush );
+		global.window.addEventListener( 'beforeunload', () => {
+			localforage.setItem( 'blah', () => 'yep' );
+		} );
 	}
 
-	reduxStore.subscribe( throttledSaveState );
+	unsubscribe = reduxStore.subscribe( throttledSaveState );
 
 	return reduxStore;
+}
+
+export function shutdown( onClear ) {
+	unsubscribe();
+	if ( global.window ) {
+		global.window.removeEventListener( 'beforeunload', throttledSaveState.flush );
+	}
+	throttledSaveState.cancel();
+	localforage.removeItem( 'redux-state', onClear );
 }
 
 export default function createReduxStoreFromPersistedInitialState( reduxStoreReady ) {
