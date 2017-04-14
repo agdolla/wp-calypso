@@ -6,7 +6,7 @@ import debugFactory from 'debug';
 import { localize } from 'i18n-calypso';
 import React, { Component, PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { get } from 'lodash';
+import { get, property, size, some } from 'lodash';
 import Gridicon from 'gridicons';
 
 /**
@@ -28,12 +28,17 @@ import SidebarRegion from 'layout/sidebar/region';
 import StatsSparkline from 'blocks/stats-sparkline';
 import { isPersonal, isPremium, isBusiness } from 'lib/products-values';
 import { getCurrentUser } from 'state/current-user/selectors';
-import { getSelectedSiteId } from 'state/ui/selectors';
+import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
 import { setNextLayoutFocus, setLayoutFocus } from 'state/ui/layout-focus/actions';
 import { userCan } from 'lib/site/utils';
-import { getMenusUrl, getPrimarySiteId, isDomainOnlySite } from 'state/selectors';
-import { getCustomizerUrl, isJetpackSite } from 'state/sites/selectors';
-import isSiteAutomatedTransfer from 'state/selectors/is-site-automated-transfer';
+import {
+	getMenusUrl,
+	getPrimarySiteId,
+	getSites,
+	isDomainOnlySite,
+	isSiteAutomatedTransfer,
+} from 'state/selectors';
+import { getSite, getCustomizerUrl, isJetpackSite } from 'state/sites/selectors';
 import { getStatsPathForTab } from 'lib/route/path';
 import { isATEnabledForCurrentSite } from 'lib/automated-transfer';
 
@@ -48,7 +53,6 @@ export class MySitesSidebar extends Component {
 		setNextLayoutFocus: PropTypes.func.isRequired,
 		setLayoutFocus: PropTypes.func.isRequired,
 		path: PropTypes.string,
-		sites: PropTypes.object,
 		currentUser: PropTypes.object,
 		isDomainOnly: PropTypes.bool,
 		isJetpack: PropTypes.bool,
@@ -101,29 +105,27 @@ export class MySitesSidebar extends Component {
 	}
 
 	isSingle() {
-		return !! ( this.props.sites.getSelectedSite() || this.props.sites.get().length === 1 );
+		return !! ( this.props.selectedSite || size( this.props.sites ) === 1 );
 	}
 
 	getSingleSiteDomain() {
-		if ( this.props.sites.selected ) {
-			return this.getSelectedSite().slug;
+		if ( this.props.selectedSite ) {
+			return this.props.selectedSite.slug;
 		}
 
-		return this.props.sites.getPrimary().slug;
+		return get( this.props.primarySite, 'slug' );
 	}
 
 	getSelectedSite() {
-		if ( this.props.sites.get().length === 1 ) {
-			return this.props.sites.getPrimary();
+		if ( size( this.props.sites ) === 1 ) {
+			return this.props.primarySite;
 		}
 
-		return this.props.sites.getSelectedSite();
+		return this.props.selectedSite;
 	}
 
 	hasJetpackSites() {
-		return this.props.sites.get().some( function( site ) {
-			return site.jetpack;
-		} );
+		return some( this.props.sites, property( 'jetpack' ) );
 	}
 
 	siteSuffix() {
@@ -133,7 +135,6 @@ export class MySitesSidebar extends Component {
 	publish() {
 		return (
 			<PublishMenu site={ this.getSelectedSite() }
-				sites={ this.props.sites }
 				siteSuffix={ this.siteSuffix() }
 				isSingle={ this.isSingle() }
 				itemLinkClass={ this.itemLinkClass }
@@ -627,7 +628,6 @@ export class MySitesSidebar extends Component {
 			<Sidebar>
 				<SidebarRegion>
 					<CurrentSite
-						sites={ this.props.sites }
 						onClick={ this.onPreviewSite }
 					/>
 					{ this.renderSidebarMenus() }
@@ -652,6 +652,9 @@ function mapStateToProps( state ) {
 		isJetpack: isJetpackSite( state, selectedSiteId ),
 		isSiteAutomatedTransfer: !! isSiteAutomatedTransfer( state, selectedSiteId ),
 		menusUrl: getMenusUrl( state, singleSiteId ),
+		primarySite: getSite( state, getPrimarySiteId( state ) ),
+		selectedSite: getSelectedSite( state ),
+		sites: getSites( state ),
 	};
 }
 
