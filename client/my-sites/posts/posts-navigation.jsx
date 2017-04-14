@@ -19,6 +19,7 @@ import Gravatar from 'components/gravatar';
 import userLib from 'lib/user';
 import { getSelectedSiteId } from 'state/ui/selectors';
 import { isJetpackSite, isSingleUserSite } from 'state/sites/selectors';
+import { areAllSitesSingleUser } from 'state/selectors';
 
 const debug = new Debug( 'calypso:posts-navigation' );
 const user = userLib();
@@ -114,7 +115,7 @@ const PostsNavigation = React.createClass( {
 			if ( this.props.isSingleUser || this.props.isJetpack ) {
 				showMyFilter = false;
 			}
-		} else if ( this.props.sites.allSingleSites ) {
+		} else if ( this.props.allSingleSites ) {
 			showMyFilter = false;
 		}
 
@@ -377,6 +378,7 @@ export default connect(
 	( state ) => {
 		const siteId = getSelectedSiteId( state );
 		return {
+			allSingleSites: areAllSitesSingleUser( state ),
 			isJetpack: isJetpackSite( state, siteId ),
 			isSingleUser: isSingleUserSite( state, siteId ),
 			siteId
