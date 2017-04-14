@@ -2,6 +2,7 @@
  * External Dependencies
  */
 import React from 'react';
+import { connect } from 'react-redux';
 import Debug from 'debug';
 
 /**
@@ -16,6 +17,8 @@ import URLSearch from 'lib/mixins/url-search';
 import PostCountsStore from 'lib/posts/post-counts-store';
 import Gravatar from 'components/gravatar';
 import userLib from 'lib/user';
+import { getSelectedSiteId } from 'state/ui/selectors';
+import { isJetpackSite, isSingleUserSite } from 'state/sites/selectors';
 
 const debug = new Debug( 'calypso:posts-navigation' );
 const user = userLib();
@@ -28,12 +31,11 @@ const statusToDescription = {
 	trash: 'trashed'
 };
 
-export default React.createClass( {
+const PostsNavigation = React.createClass( {
 	displayName: 'PostsNavigation',
 
 	propTypes: {
 		context: React.PropTypes.object.isRequired,
-		sites: React.PropTypes.object.isRequired,
 		author: React.PropTypes.number,
 		statusSlug: React.PropTypes.string,
 		search: React.PropTypes.string
@@ -46,12 +48,12 @@ export default React.createClass( {
 			state = {
 				show: true,
 				loading: true,
-				counts: null === this.props.sites.selected ?
+				counts: ! this.props.siteId ?
 					this._defaultCounts() :
 					this._getCounts()
 			};
 
-		if ( ! this.props.sites.selected || Object.keys( counts ).length ) {
+		if ( ! this.props.siteId || Object.keys( counts ).length ) {
 			state.loading = false;
 		}
 
@@ -85,8 +87,7 @@ export default React.createClass( {
 
 		let author = this.props.author ? '/my' : '',
 			statusSlug = this.props.statusSlug ? '/' + this.props.statusSlug : '',
-			siteFilter = this.props.sites.selected ? '/' + this.props.sites.selected : '',
-			selectedSite = this.props.sites.getSelectedSite(),
+			siteFilter = this.props.siteId ? '/' + this.props.siteId : '',
 			showMyFilter = true;
 
 		this.filterStatuses = {
@@ -109,8 +110,8 @@ export default React.createClass( {
 		let statusTabs = this._getStatusTabs( author, siteFilter );
 		let authorSegmented = this._getAuthorSegmented( statusSlug, siteFilter );
 
-		if ( this.props.sites.selected ) {
-			if ( selectedSite.single_user_site || selectedSite.jetpack ) {
+		if ( this.props.siteId ) {
+			if ( this.props.isSingleUser || this.props.isJetpack ) {
 				showMyFilter = false;
 			}
 		} else if ( this.props.sites.allSingleSites ) {
@@ -173,7 +174,7 @@ export default React.createClass( {
 					className={ 'is-' + status }
 					key={ 'statusTabs' + path }
 					path={ path }
-					count={ null === this.props.sites.selected || count }
+					count={ null === this.props.siteId || count }
 					value={ textItem }
 					selected={ path === this.props.context.pathname }>
 					{ textItem }
@@ -277,7 +278,7 @@ export default React.createClass( {
 	 */
 	_setPostCounts( siteID, scope ) {
 		// print default filters for `All my Sites`
-		if ( ! siteID || null === this.props.sites.selected ) {
+		if ( ! siteID || null === this.props.siteId ) {
 			return this._defaultStateOptions();
 		}
 
@@ -295,11 +296,11 @@ export default React.createClass( {
 		} );
 	},
 
-	_updatePostCounts( siteID = this.props.sites.selected, scope ) {
+	_updatePostCounts( siteID = this.props.siteId, scope ) {
 		scope = scope || ( this.props.author ? 'mine' : 'all' );
 
 		// is `All my sites` selected`
-		if ( null === this.props.sites.selected ) {
+		if ( ! this.props.siteId ) {
 			return this._defaultStateOptions();
 		}
 
@@ -330,7 +331,7 @@ export default React.createClass( {
 	 * @param {String} [scope] - Optional scope (mine or all)
 	 * @return {Object} counts
 	 */
-	_getCounts( siteID = this.props.sites.selected, scope ) {
+	_getCounts( siteID = this.props.siteId, scope ) {
 		var counts = {},
 			status;
 
@@ -371,3 +372,14 @@ export default React.createClass( {
 		return ( count !== false ) ? count : null;
 	}
 } );
+
+export default connect(
+	( state ) => {
+		const siteId = getSelectedSiteId( state );
+		return {
+			isJetpack: isJetpackSite( state, siteId ),
+			isSingleUser: isSingleUserSite( state, siteId ),
+			siteId
+		};
+	}
+)( PostsNavigation );
