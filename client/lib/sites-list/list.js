@@ -228,6 +228,10 @@ SitesList.prototype.update = function( sites ) {
 				return siteObj;
 			}
 
+			if ( siteObj.options.page_on_front !== site.options.page_on_front ) {
+				return siteObj;
+			}
+
 			if ( site.options.is_automated_transfer && ! siteObj.jetpack && site.jetpack ) {
 				//We have a site that was not jetpack and now is.
 				siteObj.off( 'change', this.propagateChange );
