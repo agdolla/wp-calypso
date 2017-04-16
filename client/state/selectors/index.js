@@ -135,6 +135,7 @@ export isSiteUpgradeable from './is-site-upgradeable';
 export isTransientMedia from './is-transient-media';
 export isTracking from './is-tracking';
 export isUpdatingJetpackSettings from './is-updating-jetpack-settings';
+export isUpdatingSiteMonitorSettings from './is-updating-site-monitor-settings';
 export isUserRegistrationDaysWithinRange from './is-user-registration-days-within-range';
 export shouldCloseVideoEditorModal from './should-close-video-editor-modal';
 export shouldShowVideoEditorError from './should-show-video-editor-error';
