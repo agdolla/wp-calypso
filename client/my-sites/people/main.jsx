@@ -26,6 +26,8 @@ import { getSelectedSite } from 'state/ui/selectors';
  */
 const debug = debugModule( 'calypso:my-sites:people:main' );
 
+// TODO: port to es6 once we remove the last observe
+// eslint-disable-line react/prefer-es6-class
 export const People = React.createClass( {
 
 	displayName: 'People',

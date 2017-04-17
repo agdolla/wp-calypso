@@ -1,9 +1,10 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { Component } from 'react';
 import config from 'config';
 import { find, get, includes } from 'lodash';
+import { localize } from 'i18n-calypso';
 
 /**
  * Internal dependencies
@@ -52,11 +53,9 @@ let PeopleNavTabs = React.createClass( {
 	}
 } );
 
-module.exports = React.createClass( {
+class PeopleSectionNav extends Component {
 
-	displayName: 'PeopleSectionNav',
-
-	canSearch: function() {
+	canSearch() {
 		if ( ! this.props.site ) {
 			return false;
 		}
@@ -79,37 +78,38 @@ module.exports = React.createClass( {
 		}
 
 		return true;
-	},
+	}
 
-	getFilters: function() {
+	getFilters() {
 		const siteFilter = get( this.props.site, 'slug', '' );
+		const { translate } = this.props;
 		const filters = [
 			{
-				title: this.translate( 'Team', { context: 'Filter label for people list' } ),
+				title: translate( 'Team', { context: 'Filter label for people list' } ),
 				path: '/people/team/' + siteFilter,
 				id: 'team'
 			},
 			{
-				title: this.translate( 'Followers', { context: 'Filter label for people list' } ),
+				title: translate( 'Followers', { context: 'Filter label for people list' } ),
 				path: '/people/followers/' + siteFilter,
 				id: 'followers'
 			},
 			{
-				title: this.translate( 'Email Followers', { context: 'Filter label for people list' } ),
+				title: translate( 'Email Followers', { context: 'Filter label for people list' } ),
 				path: '/people/email-followers/' + siteFilter,
 				id: 'email-followers'
 			},
 			{
-				title: this.translate( 'Viewers', { context: 'Filter label for people list' } ),
+				title: translate( 'Viewers', { context: 'Filter label for people list' } ),
 				path: '/people/viewers/' + siteFilter,
 				id: 'viewers'
 			}
 		];
 
 		return filters;
-	},
+	}
 
-	getNavigableFilters: function() {
+	getNavigableFilters() {
 		var allowedFilterIds = [ 'team' ];
 		if ( config.isEnabled( 'manage/people/readers' ) ) {
 			allowedFilterIds.push( 'followers' );
@@ -121,9 +121,9 @@ module.exports = React.createClass( {
 		}
 
 		return this.getFilters().filter( filter => this.props.filter === filter.id || includes( allowedFilterIds, filter.id ) );
-	},
+	}
 
-	shouldDisplayViewers: function() {
+	shouldDisplayViewers() {
 		if ( ! this.props.site ) {
 			return false;
 		}
@@ -132,9 +132,9 @@ module.exports = React.createClass( {
 			return true;
 		}
 		return false;
-	},
+	}
 
-	render: function() {
+	render() {
 		var selectedText,
 			hasPinnedItems = false,
 			search = null;
@@ -156,4 +156,6 @@ module.exports = React.createClass( {
 			</SectionNav>
 		);
 	}
-} );
+}
+
+export default localize( PeopleSectionNav );
