@@ -9,6 +9,7 @@ import assign from 'lodash/assign';
 import filter from 'lodash/filter';
 import pick from 'lodash/pick';
 import page from 'page';
+import { connect } from 'react-redux';
 
 /**
  * Internal dependencies
@@ -31,6 +32,8 @@ import PeopleNotices from 'my-sites/people/people-notices';
 import PeopleLog from 'lib/people/log-store';
 import analytics from 'lib/analytics';
 import RoleSelect from 'my-sites/people/role-select';
+import { getSelectedSiteId, getSelectedSite } from 'state/ui/selectors';
+import { getSiteSlug } from 'state/sites/selectors';
 
 /**
  * Module Variables
@@ -235,7 +238,7 @@ const EditUserForm = React.createClass( {
 	}
 } );
 
-module.exports = protectForm( React.createClass( {
+export const EditTeamMemberForm = React.createClass( {
 	displayName: 'EditTeamMemberForm',
 
 	mixins: [ PureRenderMixin ],
@@ -355,4 +358,18 @@ module.exports = protectForm( React.createClass( {
 			</Main>
 		);
 	}
-} ) );
+} );
+
+export default connect(
+	( state ) => {
+		const siteId = getSelectedSiteId( state );
+		const site = getSelectedSite( state );
+
+		return {
+			siteId,
+			siteSlug: getSiteSlug( state, siteId ),
+			isJetpack: site && site.jetpack,
+			isMultisite: site && site.is_multisite,
+		};
+	}
+)( protectForm( EditTeamMemberForm ) );

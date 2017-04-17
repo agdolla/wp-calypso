@@ -1,10 +1,9 @@
 /**
  * External dependencies
  */
-var React = require( 'react' ),
-	config = require( 'config' ),
-	find = require( 'lodash/find' ),
-	includes = require( 'lodash/includes' );
+import React from 'react';
+import config from 'config';
+import { find, get, includes } from 'lodash';
 
 /**
  * Internal dependencies
@@ -58,6 +57,10 @@ module.exports = React.createClass( {
 	displayName: 'PeopleSectionNav',
 
 	canSearch: function() {
+		if ( ! this.props.site ) {
+			return false;
+		}
+
 		// Disable search for wpcom followers and viewers
 		if ( this.props.filter ) {
 			if ( 'followers' === this.props.filter || 'viewers' === this.props.filter ) {
@@ -79,29 +82,29 @@ module.exports = React.createClass( {
 	},
 
 	getFilters: function() {
-		var siteFilter = this.props.site.slug,
-			filters = [
-				{
-					title: this.translate( 'Team', { context: 'Filter label for people list' } ),
-					path: '/people/team/' + siteFilter,
-					id: 'team'
-				},
-				{
-					title: this.translate( 'Followers', { context: 'Filter label for people list' } ),
-					path: '/people/followers/' + siteFilter,
-					id: 'followers'
-				},
-				{
-					title: this.translate( 'Email Followers', { context: 'Filter label for people list' } ),
-					path: '/people/email-followers/' + siteFilter,
-					id: 'email-followers'
-				},
-				{
-					title: this.translate( 'Viewers', { context: 'Filter label for people list' } ),
-					path: '/people/viewers/' + siteFilter,
-					id: 'viewers'
-				}
-			];
+		const siteFilter = get( this.props.site, 'slug', '' );
+		const filters = [
+			{
+				title: this.translate( 'Team', { context: 'Filter label for people list' } ),
+				path: '/people/team/' + siteFilter,
+				id: 'team'
+			},
+			{
+				title: this.translate( 'Followers', { context: 'Filter label for people list' } ),
+				path: '/people/followers/' + siteFilter,
+				id: 'followers'
+			},
+			{
+				title: this.translate( 'Email Followers', { context: 'Filter label for people list' } ),
+				path: '/people/email-followers/' + siteFilter,
+				id: 'email-followers'
+			},
+			{
+				title: this.translate( 'Viewers', { context: 'Filter label for people list' } ),
+				path: '/people/viewers/' + siteFilter,
+				id: 'viewers'
+			}
+		];
 
 		return filters;
 	},
@@ -121,6 +124,10 @@ module.exports = React.createClass( {
 	},
 
 	shouldDisplayViewers: function() {
+		if ( ! this.props.site ) {
+			return false;
+		}
+
 		if ( 'viewers' === this.props.filter || ( ! this.props.site.jetpack && this.props.site.is_private ) ) {
 			return true;
 		}

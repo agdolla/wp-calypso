@@ -10,7 +10,6 @@ import i18n from 'i18n-calypso';
 /**
  * Internal Dependencies
  */
-import sitesList from 'lib/sites-list';
 import PeopleList from './main';
 import EditTeamMember from './edit-team-member-form';
 import analytics from 'lib/analytics';
@@ -24,11 +23,7 @@ import { renderWithReduxStore } from 'lib/react-helpers';
 import { getCurrentLayoutFocus } from 'state/ui/layout-focus/selectors';
 import { setNextLayoutFocus } from 'state/ui/layout-focus/actions';
 import config from 'config';
-
-/**
- * Module variables
- */
-const sites = sitesList();
+import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
 
 export default {
 	redirectToTeam,
@@ -70,7 +65,6 @@ function renderPeopleList( filter, context ) {
 
 	renderWithReduxStore(
 		React.createElement( PeopleList, {
-			sites: sites,
 			peopleLog: PeopleLogStore,
 			filter: filter,
 			search: context.query.s
@@ -82,15 +76,12 @@ function renderPeopleList( filter, context ) {
 }
 
 function renderInvitePeople( context ) {
-	const site = sites.getSelectedSite();
+	const state = context.store.getState();
+	const site = getSelectedSite( state );
 	const isJetpack = get( site, 'jetpack' );
 
-	if ( ! sites.initialized ) {
-		sites.once( 'change', () => page( context.path ) );
-	}
-
 	if ( isJetpack && ! config.isEnabled( 'jetpack/invites' ) ) {
-		const currentLayoutFocus = getCurrentLayoutFocus( context.store.getState() );
+		const currentLayoutFocus = getCurrentLayoutFocus( state );
 		context.store.dispatch( setNextLayoutFocus( currentLayoutFocus ) );
 		page.redirect( '/people/team/' + site.slug );
 		analytics.tracks.recordEvent( 'calypso_invite_people_controller_redirect_to_team' );
@@ -108,33 +99,28 @@ function renderInvitePeople( context ) {
 }
 
 function renderSingleTeamMember( context ) {
-	let site,
-		siteId,
-		user,
-		userLogin = context.params.user_login;
+	const userLogin = context.params.user_login;
 
-	if ( ! sites.initialized ) {
-		sites.once( 'change', () => page( context.path ) );
-	}
-
-	site = sites.getSelectedSite();
-	siteId = site && site.ID ? site.ID : 0;
+	const state = context.store.getState();
+	const siteId = getSelectedSiteId( state );
+	const site = getSelectedSite( state );
 
 	context.store.dispatch( setTitle( i18n.translate( 'View Team Member', { textOnly: true } ) ) ); // FIXME: Auto-converted from the Flux setTitle action. Please use <DocumentHead> instead.
 
 	if ( siteId && 0 !== siteId ) {
-		user = UsersStore.getUserByLogin( siteId, userLogin );
+		const user = UsersStore.getUserByLogin( siteId, userLogin );
 
 		if ( ! user ) {
 			UsersActions.fetchUser( { siteId: siteId }, userLogin );
+			//TODO: port to redux
 			PeopleLogStore.once( 'change', function() {
 				let fetchUserError = PeopleLogStore.getErrors(
 					log => siteId === log.siteId && 'RECEIVE_USER_FAILED' === log.action && userLogin === log.user
 				);
 				if ( fetchUserError.length ) {
-					const currentLayoutFocus = getCurrentLayoutFocus( context.store.getState() );
+					const currentLayoutFocus = getCurrentLayoutFocus( state );
 					context.store.dispatch( setNextLayoutFocus( currentLayoutFocus ) );
-					page.redirect( '/people/team/' + site.slug );
+					page.redirect( '/people/team/' + get( site, 'slug', '' ) );
 				}
 			} );
 		} else {
@@ -144,10 +130,6 @@ function renderSingleTeamMember( context ) {
 
 	renderWithReduxStore(
 		React.createElement( EditTeamMember, {
-			siteSlug: site && site.slug ? site.slug : undefined,
-			siteId: site && site.ID ? site.ID : undefined,
-			isJetpack: site && site.jetpack,
-			isMultisite: site && site.is_multisite,
 			userLogin: userLogin,
 			prevPath: context.prevPath
 		} ),
