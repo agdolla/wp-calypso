@@ -21,8 +21,8 @@ class FollowingManageSortControls extends React.Component {
 		onSelectChange: noop,
 	}
 
-	handleSelectChange = ( event ) => {
-		this.props.onSelectChange( event.target.value );
+	handleSelectChange = ( option ) => {
+		this.props.onSelectChange( option );
 	}
 
 	render() {
