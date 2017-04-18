@@ -34,6 +34,7 @@ import analytics from 'lib/analytics';
 import RoleSelect from 'my-sites/people/role-select';
 import { getSelectedSiteId, getSelectedSite } from 'state/ui/selectors';
 import { getSiteSlug } from 'state/sites/selectors';
+import PageViewTracker from 'lib/analytics/page-view-tracker';
 
 /**
  * Module Variables
@@ -246,16 +247,14 @@ export const EditTeamMemberForm = React.createClass( {
 	getInitialState() {
 		return ( {
 			user: UsersStore.getUserByLogin( this.props.siteId, this.props.userLogin ),
-			removingUser: false
+			removingUser: false,
+			requestedUser: false
 		} );
 	},
 
 	componentDidMount() {
 		UsersStore.on( 'change', this.refreshUser );
 		PeopleLog.on( 'change', this.checkRemoveUser );
-		if ( ! this.state.user && this.props.siteId ) {
-			UsersActions.fetchUser( { siteId: this.props.siteId }, this.props.userLogin );
-		}
 	},
 
 	componentWillUnmount() {
@@ -270,8 +269,18 @@ export const EditTeamMemberForm = React.createClass( {
 	refreshUser( nextProps ) {
 		const siteId = nextProps && nextProps.siteId ? nextProps.siteId : this.props.siteId;
 
+		const peopleUser = UsersStore.getUserByLogin( siteId, this.props.userLogin );
+
+		let requestedUser = this.state.requestedUser;
+
+		if ( ! peopleUser && siteId && ! requestedUser ) {
+			UsersActions.fetchUser( { siteId }, this.props.userLogin );
+			requestedUser = true;
+		}
+
 		this.setState( {
-			user: UsersStore.getUserByLogin( siteId, this.props.userLogin )
+			user: peopleUser,
+			requestedUser
 		} );
 	},
 
@@ -334,6 +343,7 @@ export const EditTeamMemberForm = React.createClass( {
 	render() {
 		return (
 			<Main className="edit-team-member-form">
+				<PageViewTracker path="people/edit/:user_login/:site" title="View Team Member" />
 				<HeaderCake onClick={ this.goBack } isCompact />
 				{ this.renderNotices() }
 				<Card className="edit-team-member-form__user-profile">

@@ -14,8 +14,6 @@ import PeopleList from './main';
 import EditTeamMember from './edit-team-member-form';
 import analytics from 'lib/analytics';
 import titlecase from 'to-title-case';
-import UsersStore from 'lib/users/store';
-import UsersActions from 'lib/users/actions';
 import PeopleLogStore from 'lib/people/log-store';
 import { setDocumentHeadTitle as setTitle } from 'state/document-head/actions';
 import InvitePeople from './invite-people';
@@ -23,7 +21,7 @@ import { renderWithReduxStore } from 'lib/react-helpers';
 import { getCurrentLayoutFocus } from 'state/ui/layout-focus/selectors';
 import { setNextLayoutFocus } from 'state/ui/layout-focus/actions';
 import config from 'config';
-import { getSelectedSite, getSelectedSiteId } from 'state/ui/selectors';
+import { getSelectedSite } from 'state/ui/selectors';
 
 export default {
 	redirectToTeam,
@@ -99,38 +97,11 @@ function renderInvitePeople( context ) {
 }
 
 function renderSingleTeamMember( context ) {
-	const userLogin = context.params.user_login;
-
-	const state = context.store.getState();
-	const siteId = getSelectedSiteId( state );
-	const site = getSelectedSite( state );
-
 	context.store.dispatch( setTitle( i18n.translate( 'View Team Member', { textOnly: true } ) ) ); // FIXME: Auto-converted from the Flux setTitle action. Please use <DocumentHead> instead.
-
-	if ( siteId && 0 !== siteId ) {
-		const user = UsersStore.getUserByLogin( siteId, userLogin );
-
-		if ( ! user ) {
-			UsersActions.fetchUser( { siteId: siteId }, userLogin );
-			//TODO: port to redux
-			PeopleLogStore.once( 'change', function() {
-				let fetchUserError = PeopleLogStore.getErrors(
-					log => siteId === log.siteId && 'RECEIVE_USER_FAILED' === log.action && userLogin === log.user
-				);
-				if ( fetchUserError.length ) {
-					const currentLayoutFocus = getCurrentLayoutFocus( state );
-					context.store.dispatch( setNextLayoutFocus( currentLayoutFocus ) );
-					page.redirect( '/people/team/' + get( site, 'slug', '' ) );
-				}
-			} );
-		} else {
-			analytics.pageView.record( 'people/edit/:user_login/:site', 'View Team Member' );
-		}
-	}
 
 	renderWithReduxStore(
 		React.createElement( EditTeamMember, {
-			userLogin: userLogin,
+			userLogin: context.params.user_login,
 			prevPath: context.prevPath
 		} ),
 		document.getElementById( 'primary' ),
