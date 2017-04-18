@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { Component } from 'react';
 import PureRenderMixin from 'react-pure-render/mixin';
 import debugModule from 'debug';
 import omit from 'lodash/omit';
@@ -240,38 +240,35 @@ const EditUserForm = React.createClass( {
 	}
 } );
 
-export const EditTeamMemberForm = React.createClass( {
-	displayName: 'EditTeamMemberForm',
-
-	mixins: [ PureRenderMixin ],
-
-	getInitialState() {
-		return ( {
-			user: UsersStore.getUserByLogin( this.props.siteId, this.props.userLogin ),
+export class EditTeamMemberForm extends Component {
+	constructor( props ) {
+		super( props );
+		this.state = {
+			user: UsersStore.getUserByLogin( props.siteId, props.userLogin ),
 			removingUser: false,
 			requestedUser: false
-		} );
-	},
+		};
+	}
 
 	componentWillMount() {
 		this.refreshUser();
-	},
+	}
 
 	componentDidMount() {
 		UsersStore.on( 'change', this.refreshUser );
 		PeopleLog.on( 'change', this.checkRemoveUser );
 		PeopleLog.on( 'change', this.redirectIfError );
-	},
+	}
 
 	componentWillUnmount() {
 		UsersStore.removeListener( 'change', this.refreshUser );
 		PeopleLog.removeListener( 'change', this.checkRemoveUser );
 		PeopleLog.removeListener( 'change', this.redirectIfError );
-	},
+	}
 
 	componentWillReceiveProps( nextProps ) {
 		this.refreshUser( nextProps );
-	},
+	}
 
 	refreshUser( nextProps ) {
 		const siteId = nextProps && nextProps.siteId ? nextProps.siteId : this.props.siteId;
@@ -289,7 +286,7 @@ export const EditTeamMemberForm = React.createClass( {
 			user: peopleUser,
 			requestedUser
 		} );
-	},
+	}
 
 	redirectIfError() {
 		if ( this.props.siteId ) {
@@ -300,7 +297,7 @@ export const EditTeamMemberForm = React.createClass( {
 				page.redirect( `/people/team/${ this.props.siteSlug }` );
 			}
 		}
-	},
+	}
 
 	checkRemoveUser() {
 		if ( ! this.props.siteId ) {
@@ -330,9 +327,9 @@ export const EditTeamMemberForm = React.createClass( {
 				removingUser: ! this.state.removingUser
 			} );
 		}
-	},
+	}
 
-	goBack() {
+	goBack = () => {
 		analytics.ga.recordEvent( 'People', 'Clicked Back Button on User Edit' );
 		if ( this.props.siteSlug ) {
 			const teamBack = '/people/team/' + this.props.siteSlug,
@@ -347,7 +344,7 @@ export const EditTeamMemberForm = React.createClass( {
 			return;
 		}
 		page( '/people/team' );
-	},
+	};
 
 	renderNotices() {
 		if ( ! this.state.user ) {
@@ -356,7 +353,7 @@ export const EditTeamMemberForm = React.createClass( {
 		return (
 			<PeopleNotices user={ this.state.user } />
 		);
-	},
+	}
 
 	render() {
 		return (
@@ -386,7 +383,7 @@ export const EditTeamMemberForm = React.createClass( {
 			</Main>
 		);
 	}
-} );
+}
 
 export default connect(
 	( state ) => {
