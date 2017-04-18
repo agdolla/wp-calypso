@@ -14,13 +14,13 @@
 
 .following-manage__subscriptions-controls {
 	display: flex;
-	align-items: center;
 
-	.reader-import-button, .reader-export-button, .following-manage__sort-controls {
-		margin-right: 10px;
+	.reader-import-button,
+	.reader-export-button {
+		margin: 4px 15px 0 0;
 	}
 
-	.select-dropdown.is-open {
-		height: 135px;
+	.select-dropdown.is-compact {
+		height: auto;
 	}
 }
