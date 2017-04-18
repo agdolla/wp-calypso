@@ -270,7 +270,7 @@ export class EditTeamMemberForm extends Component {
 		this.refreshUser( nextProps );
 	}
 
-	refreshUser( nextProps ) {
+	refreshUser = ( nextProps ) => {
 		const siteId = nextProps && nextProps.siteId ? nextProps.siteId : this.props.siteId;
 
 		const peopleUser = UsersStore.getUserByLogin( siteId, this.props.userLogin );
@@ -286,9 +286,9 @@ export class EditTeamMemberForm extends Component {
 			user: peopleUser,
 			requestedUser
 		} );
-	}
+	};
 
-	redirectIfError() {
+	redirectIfError = () => {
 		if ( this.props.siteId ) {
 			const fetchUserError = PeopleLogStore.getErrors(
 				log => this.props.siteId === log.siteId && 'RECEIVE_USER_FAILED' === log.action && this.props.userLogin === log.user
@@ -297,9 +297,9 @@ export class EditTeamMemberForm extends Component {
 				page.redirect( `/people/team/${ this.props.siteSlug }` );
 			}
 		}
-	}
+	};
 
-	checkRemoveUser() {
+	checkRemoveUser = () => {
 		if ( ! this.props.siteId ) {
 			return;
 		}
@@ -327,7 +327,7 @@ export class EditTeamMemberForm extends Component {
 				removingUser: ! this.state.removingUser
 			} );
 		}
-	}
+	};
 
 	goBack = () => {
 		analytics.ga.recordEvent( 'People', 'Clicked Back Button on User Edit' );
