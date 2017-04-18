@@ -44,6 +44,7 @@ describe( 'reducer', () => {
 			'mediaStorage',
 			'plans',
 			'guidedTransfer',
+			'monitor',
 			'vouchers',
 			'updates',
 			'requesting',
