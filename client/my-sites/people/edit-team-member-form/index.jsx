@@ -35,6 +35,7 @@ import RoleSelect from 'my-sites/people/role-select';
 import { getSelectedSiteId, getSelectedSite } from 'state/ui/selectors';
 import { getSiteSlug } from 'state/sites/selectors';
 import PageViewTracker from 'lib/analytics/page-view-tracker';
+import PeopleLogStore from 'lib/people/log-store';
 
 /**
  * Module Variables
@@ -252,14 +253,20 @@ export const EditTeamMemberForm = React.createClass( {
 		} );
 	},
 
+	componentWillMount() {
+		this.refreshUser();
+	},
+
 	componentDidMount() {
 		UsersStore.on( 'change', this.refreshUser );
 		PeopleLog.on( 'change', this.checkRemoveUser );
+		PeopleLog.on( 'change', this.redirectIfError );
 	},
 
 	componentWillUnmount() {
 		UsersStore.removeListener( 'change', this.refreshUser );
 		PeopleLog.removeListener( 'change', this.checkRemoveUser );
+		PeopleLog.removeListener( 'change', this.redirectIfError );
 	},
 
 	componentWillReceiveProps( nextProps ) {
@@ -282,6 +289,17 @@ export const EditTeamMemberForm = React.createClass( {
 			user: peopleUser,
 			requestedUser
 		} );
+	},
+
+	redirectIfError() {
+		if ( this.props.siteId ) {
+			const fetchUserError = PeopleLogStore.getErrors(
+				log => this.props.siteId === log.siteId && 'RECEIVE_USER_FAILED' === log.action && this.props.userLogin === log.user
+			);
+			if ( fetchUserError.length ) {
+				page.redirect( `/people/team/${ this.props.siteSlug }` );
+			}
+		}
 	},
 
 	checkRemoveUser() {
