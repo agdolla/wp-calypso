@@ -96,8 +96,8 @@ export function persistOnChange( reduxStore, serializeState = serialize ) {
 }
 
 /**
- * Remove event listeners, cancel any pending writes,
- * and clear all persisted state.
+ * Removes redux state change listener, cancels any pending writes,
+ * and clears all persisted state.
  *
  * @param {function} onClear function to call on clearing of persisted state
  */
