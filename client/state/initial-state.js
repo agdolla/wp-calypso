@@ -88,9 +88,6 @@ export function persistOnChange( reduxStore, serializeState = serialize ) {
 
 	if ( global.window ) {
 		global.window.addEventListener( 'beforeunload', throttledSaveState.flush );
-		global.window.addEventListener( 'beforeunload', () => {
-			localforage.setItem( 'blah', () => 'yep' );
-		} );
 	}
 
 	unsubscribe = reduxStore.subscribe( throttledSaveState );
@@ -100,9 +97,6 @@ export function persistOnChange( reduxStore, serializeState = serialize ) {
 
 export function shutdown( onClear ) {
 	unsubscribe();
-	if ( global.window ) {
-		global.window.removeEventListener( 'beforeunload', throttledSaveState.flush );
-	}
 	throttledSaveState.cancel();
 	localforage.removeItem( 'redux-state', onClear );
 }
